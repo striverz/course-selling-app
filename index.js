@@ -6,6 +6,7 @@ const { authRouter } = require("./routes/authRouter");
 
 const { courseRouter } = require("./routes/courseRouter");
 const { adminRouter } = require("./routes/adminRouter");
+
 require("dotenv").config();
 
 app.use(express.json()); //middleware for reading json body

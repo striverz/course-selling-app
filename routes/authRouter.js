@@ -4,7 +4,6 @@ const { validatingUserInfo } = require("../utils/Validation");
 const bcrypt = require("bcrypt");
 const { UserModel } = require("../models/userModel");
 const jwt = require("jsonwebtoken");
-const { authUser } = require("../middlewares/authUser");
 
 authRouter.post("/signup", async (req, res) => {
   try {
@@ -49,7 +48,7 @@ authRouter.post("/signin", async (req, res) => {
       {
         id: user._id,
       },
-      process.env.JWT_SECRET
+      process.env.JWT_USER_SECRET
     );
     res.cookie("token", token);
     res.json({

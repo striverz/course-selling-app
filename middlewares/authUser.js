@@ -9,9 +9,7 @@ const authUser = async (req, res, next) => {
 
   //if everything was fine then,
   const decodedId = isTokenValid.id;
-  const userFound = await UserModel.findById(decodedId);
-  req.user = userFound;
-  req.id = decodedId;
+  req.userId = decodedId;
   next();
 };
 module.exports = {

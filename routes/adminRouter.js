@@ -1,10 +1,26 @@
 const express = require("express");
 const adminRouter = express.Router();
+const { validatingUserInfo } = require("../utils/Validation");
+const bcrypt = require("bcrypt");
+const { AdminModel } = require("../models/adminModel");
 
-adminRouter.post("/signup", (req, res) => {
+adminRouter.post("/signup", async (req, res) => {
   try {
+    //validating the user details
+    const isValidDetails = validatingUserInfo(req.body);
+    if (!isValidDetails) throw new Error(isValidDetails);
+
+    //after the uservalidation successful
+    const { firstName, lastName, emailId, password } = req.body;
+    const hashPassword = await bcrypt.hash(password, 10);
+    await UserModel.create({
+      firstName,
+      lastName,
+      emailId,
+      password: hashPassword,
+    });
     res.json({
-      message: "admin signup",
+      message: "The User Signup Successful",
     });
   } catch (err) {
     res.status(401).json({
@@ -12,10 +28,29 @@ adminRouter.post("/signup", (req, res) => {
     });
   }
 });
-adminRouter.post("/signin", (req, res) => {
+adminRouter.post("/signin", async (req, res) => {
   try {
+    const emailId = req.body.emailId;
+    const password = req.body.password;
+
+    const user = await AdminModel.findOne({
+      emailId,
+    });
+    if (!user) throw new Error("User Not found for Login!");
+    const isPasswordValid = bcrypt.compare(password, user.password);
+    if (!isPasswordValid) throw new Error("The password is not valid");
+
+    //everything was fine then create a token for the admin user
+    const token = jwt.sign(
+      {
+        id: user._id,
+      },
+      process.env.JWT_ADMIN_SECRET
+    );
+
+    res.cookie("token", token);
     res.json({
-      message: "admin signin",
+      message: "Admin Login Successful!",
     });
   } catch (err) {
     res.status(401).json({
