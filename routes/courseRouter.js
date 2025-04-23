@@ -25,6 +25,15 @@ courseRouter.get("/preview", authUser, (req, res) => {
     });
   }
 });
+
+courseRouter.get("/purchase", authUser, (req, res) => {
+  try {
+  } catch (err) {
+    res.status(401).json({
+      message: err.message,
+    });
+  }
+});
 module.exports = {
   courseRouter,
 };

@@ -4,6 +4,8 @@ const { validatingUserInfo } = require("../utils/Validation");
 const bcrypt = require("bcrypt");
 const { AdminModel } = require("../models/adminModel");
 const jwt = require("jsonwebtoken");
+const { authAdmin } = require("../middlewares/authAdmin");
+const { CourseModel } = require("../models/courseModel");
 
 adminRouter.post("/signup", async (req, res) => {
   try {
@@ -21,7 +23,7 @@ adminRouter.post("/signup", async (req, res) => {
       password: hashPassword,
     });
     res.json({
-      message: "The User Signup Successful",
+      message: "The Admin Signup Successful",
     });
   } catch (err) {
     res.status(401).json({
@@ -61,10 +63,21 @@ adminRouter.post("/signin", async (req, res) => {
     });
   }
 });
-adminRouter.post("/course", (req, res) => {
+adminRouter.post("/course", authAdmin, async (req, res) => {
   try {
+    const { title, description, imageURL, price } = req.body;
+    const adminId = req.adminId;
+    const course = await CourseModel.create({
+      title,
+      description,
+      imageURL,
+      price,
+      creatorId: adminId,
+    });
+
     res.json({
-      message: "admin courses",
+      message: "Course Added Successfully",
+      courseId: course._id,
     });
   } catch (err) {
     res.status(401).json({
@@ -72,10 +85,42 @@ adminRouter.post("/course", (req, res) => {
     });
   }
 });
-adminRouter.patch("/course", (req, res) => {
+adminRouter.patch("/course", authAdmin, async (req, res) => {
   try {
+    const adminId = req.adminId;
+    const { description, title, price, courseId } = req.body;
+    await CourseModel.findOneAndUpdate(
+      {
+        //filters
+        creatorId: adminId,
+        _id: courseId,
+      },
+      {
+        description,
+        price,
+        title,
+      }
+    );
+
     res.json({
-      message: "admin updates courses",
+      message: "The course updated Successfully",
+      courseId,
+    });
+  } catch (err) {
+    res.status(401).json({
+      message: err.message,
+    });
+  }
+});
+adminRouter.get("/course", authAdmin, async (req, res) => {
+  try {
+    const adminId = req.adminId;
+    const allCourses = await CourseModel.find({
+      creatorId: adminId,
+    });
+    res.json({
+      message: "The Course of yours are",
+      allCourses,
     });
   } catch (err) {
     res.status(401).json({
