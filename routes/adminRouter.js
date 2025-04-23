@@ -3,6 +3,7 @@ const adminRouter = express.Router();
 const { validatingUserInfo } = require("../utils/Validation");
 const bcrypt = require("bcrypt");
 const { AdminModel } = require("../models/adminModel");
+const jwt = require("jsonwebtoken");
 
 adminRouter.post("/signup", async (req, res) => {
   try {
@@ -13,7 +14,7 @@ adminRouter.post("/signup", async (req, res) => {
     //after the uservalidation successful
     const { firstName, lastName, emailId, password } = req.body;
     const hashPassword = await bcrypt.hash(password, 10);
-    await UserModel.create({
+    await AdminModel.create({
       firstName,
       lastName,
       emailId,
@@ -36,8 +37,10 @@ adminRouter.post("/signin", async (req, res) => {
     const user = await AdminModel.findOne({
       emailId,
     });
+
     if (!user) throw new Error("User Not found for Login!");
-    const isPasswordValid = bcrypt.compare(password, user.password);
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+
     if (!isPasswordValid) throw new Error("The password is not valid");
 
     //everything was fine then create a token for the admin user
@@ -73,6 +76,19 @@ adminRouter.patch("/course", (req, res) => {
   try {
     res.json({
       message: "admin updates courses",
+    });
+  } catch (err) {
+    res.status(401).json({
+      message: err.message,
+    });
+  }
+});
+
+adminRouter.post("/logout", (req, res) => {
+  try {
+    res.cookie("token", null, { expires: new Date(Date.now()) });
+    res.json({
+      message: "The Adming Logout Successful!",
     });
   } catch (err) {
     res.status(401).json({
