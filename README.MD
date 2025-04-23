@@ -92,3 +92,5 @@
 
   - /api/v1/course/purchase(GET)
     - findghe the courses from the purchases where the purchases of userId=req.userId
+
+- COMPLETED THE BACKEND PART OF THE APPLICATION
